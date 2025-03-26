@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<robot name="ezgripper_single_mount" xmlns:xacro="http://ros.org/wiki/xacro">
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
 
   <material name="black">
     <color rgba="0.0 0.0 0.0 1.0"/>
@@ -12,5 +12,11 @@
   <material name="grey">
     <color rgba="0.5 0.5 0.5 1"/>
   </material>
+
+
+  <material name="white">
+    <color rgba="1.0 1.0 1.0 1.0"/> <!-- RGBA: Red, Green, Blue, Alpha (transparency) -->
+  </material>
+
 
 </robot>

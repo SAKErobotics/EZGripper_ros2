@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot name="SAKE_double_mount" xmlns:xacro="http://ros.org/wiki/xacro">
+
+
+	<xacro:macro name="SAKE_double_mount" params="prefix parent_link *origin">
+
+		<!-- links -->
+
+		<joint name="${prefix}_ezgripper_mount2base" type="fixed">
+				<xacro:insert_block name="origin"/>
+				<parent link="${parent_link}"/>
+				<child link="${prefix}_ezgripper_to_mount"/>
+				<axis xyz="0 0 0"/>
+				<limit effort="0" lower="-1.57075" upper="0.25" velocity="3.67"/>
+		</joint>	
+		
+		<link name="${prefix}_ezgripper_to_mount">
+			<visual>
+				<origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
+				<geometry>
+					<mesh filename="file://$(find ezgripper_description)/meshes/visual/SAKE_Double_Mount.stl"/>
+				</geometry>
+				<material name="blue"/>
+			</visual>
+			<collision>
+				<origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
+				<geometry>
+					<mesh filename="file://$(find ezgripper_description)/meshes/collision/SAKE_Double_Mount.stl"/>
+				</geometry>
+			</collision>
+			<inertial>
+				<mass value=".3"/>
+				<inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01"/>
+			</inertial>
+		</link>
+		
+
+
+
+		<gazebo reference="${prefix}_ezgripper_mount">
+			<material>Gazebo/Blue</material>
+		</gazebo>
+
+	</xacro:macro>
+
+
+</robot>

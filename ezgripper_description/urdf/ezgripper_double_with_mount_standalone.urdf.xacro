@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot name="ezgripper_single_mount_instantiation" xmlns:xacro="http://ros.org/wiki/xacro">
+
+
+    <xacro:property name="prefix" value="left" />
+    <xacro:property name="ezgripper_offset_x" value="0.00"/>
+    <xacro:property name="ezgripper_offset_y" value="0.0"/>
+    <xacro:property name="ezgripper_offset_z" value="0.0"/>
+
+    <xacro:include filename="ezgripper_double_with_mount.urdf.xacro" />
+
+    <!-- Instantiate the gripper and mount assembly with specified parameters -->
+	<xacro:ezgripper_double_with_mount prefix="${prefix}" parent_link="base_link">
+		<origin xyz="${ezgripper_offset_x} ${ezgripper_offset_y} ${ezgripper_offset_z}" rpy="0 0 0"/>
+	</xacro:ezgripper_double_with_mount>
+
+    <link name="world"/>
+
+    <joint name="fixed" type="fixed">
+        <parent link="world"/>
+        <child link="base_link"/>
+    </joint>
+
+    <link name="base_link">
+        <visual>
+            <geometry>
+                <cylinder length="0.42" radius="0.02"/>
+            </geometry>
+            <origin rpy="0 0 0" xyz="0 0 0.21"/>
+            <material name="black"/>
+        </visual>
+        <collision>
+            <geometry>
+                <cylinder length="0.42" radius="0.02"/>
+            </geometry>
+            <origin rpy="0 0 0" xyz="0 0 0.21"/>
+        </collision>
+    </link>
+
+
+
+</robot>
+

@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+
+<robot name="ezgripper_triple_with_mount" xmlns:xacro="http://ros.org/wiki/xacro">
+
+
+  <xacro:macro name="ezgripper_triple_with_mount" params="prefix parent_link *origin">
+
+    <xacro:property name="gripper_spacing" value="0.068"/>  <!-- Gripper separation in mm -->
+    <xacro:property name="gripper_offset" value="0.01254"/>   <!-- Gripper offset in the positive X direction from the mount in mm single = 16mm, double and triple = 12.54-->
+
+    <!-- Include the gripper and mount files -->
+    <xacro:include filename="$(find ezgripper_description)/urdf/SAKE_triple_mount.urdf.xacro" />
+    <xacro:include filename="$(find ezgripper_description)/urdf/ezgripper_single.urdf.xacro" />
+
+    <!-- Instantiate the triple mount -->
+    <xacro:SAKE_triple_mount prefix="${prefix}" parent_link="${parent_link}">
+      <xacro:insert_block name="origin"/>
+    </xacro:SAKE_triple_mount>
+
+    <!-- Instantiate the first ezgripper_single -->
+    <xacro:ezgripper_single prefix="${prefix}_gripper1" parent_link="${prefix}_ezgripper_to_mount">
+      <origin xyz="${gripper_offset} 0 ${gripper_spacing}" rpy="0 0 0"/>
+    </xacro:ezgripper_single>
+
+    <!-- Instantiate the second ezgripper_single -->
+    <xacro:ezgripper_single prefix="${prefix}_gripper2" parent_link="${prefix}_ezgripper_to_mount">
+      <origin xyz="${gripper_offset} 0 0" rpy="0 0 0"/>
+    </xacro:ezgripper_single>
+
+    <!-- Instantiate the third ezgripper_single -->
+    <xacro:ezgripper_single prefix="${prefix}_gripper3" parent_link="${prefix}_ezgripper_to_mount">
+      <origin xyz="${gripper_offset} 0 -${gripper_spacing}" rpy="0 0 0"/>
+    </xacro:ezgripper_single>
+
+  </xacro:macro>
+
+
+</robot>
+
