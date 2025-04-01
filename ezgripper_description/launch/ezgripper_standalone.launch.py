@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """
-Spawn Single EZGripper - Description Component
+EZGripper Standalone - Launch File for Independent Operation
+This launch file runs the EZGripper component independently with its own
+robot state publisher and visualization.
 """
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, RegisterEventHandler, LogInfo, EmitEvent
@@ -8,9 +10,9 @@ from launch.event_handlers import OnProcessExit, OnShutdown
 from launch.events import Shutdown
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration, Command
-from launch.conditions import IfCondition, UnlessCondition
-from launch_ros.actions import Node, PushRosNamespace
-from launch.actions import GroupAction
+from launch.conditions import IfCondition
+from launch_ros.actions import Node
+from launch_ros.parameter_descriptions import ParameterValue
 from ament_index_python.packages import get_package_share_directory
 import os
 
@@ -20,6 +22,7 @@ def generate_launch_description():
     
     # Path to the URDF file
     urdf_file = os.path.join(pkg_dir, 'urdf', 'ezgripper_single_with_mount_standalone.urdf.xacro')
+    rviz_config_path = os.path.join(pkg_dir, 'rviz', 'urdf.rviz')
     
     # Declare launch arguments
     use_sim_time_arg = DeclareLaunchArgument(
@@ -34,39 +37,22 @@ def generate_launch_description():
         description='Namespace for the gripper'
     )
     
-    launch_joint_publisher_arg = DeclareLaunchArgument(
-        'launch_joint_publisher',
+    rviz_arg = DeclareLaunchArgument(
+        'rviz',
         default_value='true',
-        description='Whether to launch the gripper joint publisher'
+        description='Launch RViz: "true" or "false"'
     )
     
-    launch_robot_state_publisher_arg = DeclareLaunchArgument(
-        'launch_robot_state_publisher',
-        default_value='true',
-        description='Whether to launch robot state publisher'
-    )
-    
-    # Include gripper joint publisher launch file
-    joint_publisher_include = IncludeLaunchDescription(
+    # Include the base component launch file
+    component_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            os.path.join(pkg_dir, 'launch', 'gripper_joint_publisher.launch.py')
+            os.path.join(pkg_dir, 'launch', 'ezgripper_description.launch.py')
         ),
         launch_arguments={
             'use_sim_time': LaunchConfiguration('use_sim_time'),
             'namespace': LaunchConfiguration('namespace'),
-            'output_topic': '/gripper_joint_states'
-        }.items(),
-        condition=IfCondition(LaunchConfiguration('launch_joint_publisher'))
-    )
-    
-    # Include gripper static TF publisher launch file
-    static_tf_publisher_include = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            os.path.join(pkg_dir, 'launch', 'gripper_static_tf_publisher.launch.py')
-        ),
-        launch_arguments={
-            'use_sim_time': LaunchConfiguration('use_sim_time'),
-            'namespace': LaunchConfiguration('namespace')
+            'launch_joint_publisher': 'true',
+            'launch_static_tf_publisher': 'true'
         }.items()
     )
     
@@ -80,16 +66,25 @@ def generate_launch_description():
         parameters=[
             {
                 'use_sim_time': LaunchConfiguration('use_sim_time'),
-                'robot_description': Command(['xacro', ' ', urdf_file])
+                'robot_description': ParameterValue(Command(['xacro', ' ', urdf_file]), value_type=str)
             }
         ],
         remappings=[
-            ('/joint_states', '/gripper_joint_states')
-        ],
-        condition=IfCondition(LaunchConfiguration('launch_robot_state_publisher'))
+            ('/joint_states', '/ezgripper/joint_states')
+        ]
     )
     
-    # Event handler for robot state publisher
+    # Launch RViz
+    rviz_node = Node(
+        package='rviz2',
+        executable='rviz2',
+        name='rviz2',
+        output='screen',
+        arguments=['-d', rviz_config_path],
+        condition=IfCondition(LaunchConfiguration('rviz'))
+    )
+    
+    # Event handlers for proper cleanup
     robot_state_publisher_exit_handler = RegisterEventHandler(
         OnProcessExit(
             target_action=robot_state_publisher,
@@ -100,20 +95,41 @@ def generate_launch_description():
         )
     )
     
+    # RViz exit handler
+    rviz_exit_handler = RegisterEventHandler(
+        OnProcessExit(
+            target_action=rviz_node,
+            on_exit=[
+                LogInfo(msg=['RViz exited, shutting down launch']),
+                EmitEvent(event=Shutdown(reason='RViz exited'))
+            ]
+        )
+    )
+    
+    # Shutdown handler for SIGINT (Ctrl+C)
+    shutdown_handler = RegisterEventHandler(
+        OnShutdown(
+            on_shutdown=[
+                LogInfo(msg=['Launch was asked to shutdown: stopping all nodes'])
+            ]
+        )
+    )
+    
     return LaunchDescription([
         # Launch arguments
         use_sim_time_arg,
         namespace_arg,
-        launch_joint_publisher_arg,
-        launch_robot_state_publisher_arg,
+        rviz_arg,
         
-        # Included launch files
-        joint_publisher_include,
-        static_tf_publisher_include,
+        # Include component launch
+        component_launch,
         
         # Nodes
         robot_state_publisher,
+        rviz_node,
         
         # Event handlers
-        robot_state_publisher_exit_handler
+        robot_state_publisher_exit_handler,
+        rviz_exit_handler,
+        shutdown_handler
     ])

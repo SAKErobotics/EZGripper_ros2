@@ -17,26 +17,61 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
+find_package(ament_cmake_python REQUIRED)
+find_package(rclpy REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 
-# .....................................................
+# Install directories
+install(
+  DIRECTORY 
+    urdf 
+    meshes 
+    rviz 
+    launch
+    config
+  DESTINATION share/${PROJECT_NAME}
+)
 
-install(DIRECTORY launch meshes rviz urdf
-  DESTINATION share/${PROJECT_NAME})
+# Auto-detect and install Python executables from both scripts/ and package directories
+file(GLOB PYTHON_SCRIPTS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/scripts/*.py")
+file(GLOB PYTHON_PACKAGE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}/*.py")
 
-# .....................................................
+# Create a list of all Python files from both locations
+set(ALL_PYTHON_FILES ${PYTHON_SCRIPTS_DIR} ${PYTHON_PACKAGE_DIR})
 
+# Iterate over each Python file and install them as executables
+foreach(python_file ${ALL_PYTHON_FILES})
+    get_filename_component(script_name ${python_file} NAME_WE)
+    install(PROGRAMS
+        ${python_file}
+        DESTINATION lib/${PROJECT_NAME}
+        RENAME ${script_name}
+    )
+endforeach()
+
+# Install scripts directory
+install(
+  DIRECTORY scripts/
+  DESTINATION lib/${PROJECT_NAME}
+  FILES_MATCHING PATTERN "*.py"
+  PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+)
+
+# No longer using ament_python_install_package since we removed setup.py
+
+# Make sure the scripts are executable
+install(
+  PROGRAMS 
+    scripts/ezgripper_joint_merger.py
+    ${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}/gripper_joint_publisher.py
+    ${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}/ezgripper_joint_merger.py
+    ${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}/gripper_static_tf_publisher.py
+  DESTINATION lib/${PROJECT_NAME}
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
-  # the following line skips the linter which checks for copyrights
-  # uncomment the line when a copyright and license is not present in all source files
-  #set(ament_cmake_copyright_FOUND TRUE)
-  # the following line skips cpplint (only works in a git repo)
-  # uncomment the line when this package is not in a git repo
-  #set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 endif()
 

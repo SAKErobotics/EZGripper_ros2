@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <robot name="ezgripper_single" xmlns:xacro="http://ros.org/wiki/xacro">
 
+    <!-- Include centralized material definitions (properties only) -->
+    <xacro:include filename="$(find ezgripper_description)/urdf/materials.xacro" />
+    
 
 	<xacro:macro name="ezgripper_single" params="prefix parent_link *origin">
 
@@ -27,14 +30,14 @@
 			<visual>
 				<origin xyz="0.0 0 0" rpy="0 0 0"/>
 				<geometry>
-					<mesh filename="file://$(find ezgripper_description)/meshes/visual/SAKE_Palm_IM.stl"/>
+					<mesh filename="package://ezgripper_description/meshes/visual/SAKE_Palm_IM.stl"/>
 				</geometry>
-				<material name="blue"/>
+				<material name="ezgripper_blue"/>
 			</visual>
 			<collision>
 				<origin xyz="0.0 0 0" rpy="0 0 0"/>
 				<geometry>
-					<mesh filename="file://$(find ezgripper_description)/meshes/collision/SAKE_Palm_IM.stl"/>
+					<box size="0.04 0.04 0.04"/>
 				</geometry>
 			</collision>
 			<inertial>
@@ -80,14 +83,14 @@
 			<visual>
 				<origin xyz="0 0 0" rpy="0 0 0"/>
 				<geometry>
-					<mesh filename="file://$(find ezgripper_description)/meshes/visual/SAKE_Finger_L1_IM.stl"/>
+					<mesh filename="package://ezgripper_description/meshes/visual/SAKE_Finger_L1_IM.stl"/>
 				</geometry>
-				<material name="grey"/>
+				<material name="ezgripper_grey"/>
 			</visual>
 			<collision>
 				<origin xyz="0 0 0" rpy="0 0 0"/>
 				<geometry>
-					<mesh filename="file://$(find ezgripper_description)/meshes/collision/SAKE_Finger_L1_IM.stl"/>
+					<box size="0.03 0.01 0.03"/>
 				</geometry>
 			</collision>
 			<inertial>
@@ -109,14 +112,14 @@
 			<visual>
 				<origin xyz="0 0 0" rpy="0 0 0"/>
 				<geometry>
-					<mesh filename="file://$(find ezgripper_description)/meshes/visual/SAKE_Finger_L2_IM.stl"/>
+					<mesh filename="package://ezgripper_description/meshes/visual/SAKE_Finger_L2_IM.stl"/>
 				</geometry>
-				<material name="grey"/>
+				<material name="ezgripper_grey"/>
 			</visual>
 			<collision>
 				<origin xyz="0 0 0" rpy="0 0 0"/>
 				<geometry>
-					<mesh filename="file://$(find ezgripper_description)/meshes/collision/SAKE_Finger_L2_IM.stl"/>
+					<box size="0.03 0.01 0.03"/>
 				</geometry>
 			</collision>
 			<inertial>
@@ -138,14 +141,14 @@
 			<visual>
 				<origin xyz="0 0 0" rpy="0 0 0"/>
 				<geometry>
-					<mesh filename="file://$(find ezgripper_description)/meshes/visual/SAKE_Finger_Pad_IM.stl"/>
+					<mesh filename="package://ezgripper_description/meshes/visual/SAKE_Finger_Pad_IM.stl"/>
 				</geometry>
-				<material name="grey"/>
+				<material name="ezgripper_grey"/>
 			</visual>
 			<collision>
 				<origin xyz="0 0 0" rpy="0 0 0"/>
 				<geometry>
-					<mesh filename="file://$(find ezgripper_description)/meshes/collision/SAKE_Finger_Pad_IM.stl"/>
+					<box size="0.02 0.01 0.02"/>
 				</geometry>
 			</collision>
 			<inertial>

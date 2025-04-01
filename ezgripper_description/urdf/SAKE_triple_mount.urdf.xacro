@@ -18,14 +18,14 @@
 			<visual>
 				<origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
 				<geometry>
-					<mesh filename="file://$(find ezgripper_description)/meshes/visual/SAKE_Triple_Mount.stl"/>
+					<mesh filename="package://ezgripper_description/meshes/visual/SAKE_Triple_Mount.stl"/>
 				</geometry>
-				<material name="blue"/>
+				<material name="ezgripper_blue"/>
 			</visual>
 			<collision>
 				<origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
 				<geometry>
-					<mesh filename="file://$(find ezgripper_description)/meshes/collision/SAKE_Triple_Mount.stl"/>
+					<box size="0.05 0.05 0.15"/>
 				</geometry>
 			</collision>
 			<inertial>
@@ -37,7 +37,7 @@
 
 
 
-		<gazebo reference="${prefix}_ezgripper_mount">
+		<gazebo reference="${prefix}_ezgripper_to_mount">
 			<material>Gazebo/Blue</material>
 		</gazebo>
 
