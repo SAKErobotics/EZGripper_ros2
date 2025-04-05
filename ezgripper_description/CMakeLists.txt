@@ -33,12 +33,11 @@ install(
   DESTINATION share/${PROJECT_NAME}
 )
 
-# Auto-detect and install Python executables from both scripts/ and package directories
-file(GLOB PYTHON_SCRIPTS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/scripts/*.py")
+# Auto-detect and install Python executables from the package directory
 file(GLOB PYTHON_PACKAGE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}/*.py")
 
-# Create a list of all Python files from both locations
-set(ALL_PYTHON_FILES ${PYTHON_SCRIPTS_DIR} ${PYTHON_PACKAGE_DIR})
+# Create a list of all Python files
+set(ALL_PYTHON_FILES ${PYTHON_PACKAGE_DIR})
 
 # Iterate over each Python file and install them as executables
 foreach(python_file ${ALL_PYTHON_FILES})
@@ -50,23 +49,17 @@ foreach(python_file ${ALL_PYTHON_FILES})
     )
 endforeach()
 
-# Install scripts directory
-install(
-  DIRECTORY scripts/
-  DESTINATION lib/${PROJECT_NAME}
-  FILES_MATCHING PATTERN "*.py"
-  PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-)
+# No need to install scripts directory as it's being removed
 
 # No longer using ament_python_install_package since we removed setup.py
 
 # Make sure the scripts are executable
 install(
   PROGRAMS 
-    scripts/ezgripper_joint_merger.py
     ${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}/gripper_joint_publisher.py
-    ${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}/ezgripper_joint_merger.py
     ${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}/gripper_static_tf_publisher.py
+    ${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}/cleanup_ezgripper_processes.py
+    ${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}/test_ezgripper_launch_files.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

@@ -112,6 +112,28 @@ A ROS2 package that serves as a driver to the [EZGripper module](https://sakerob
 Access the URDF [models](https://github.com/SAKErobotics/EZGripper/tree/master/ezgripper_driver/urdf) for additional information.
 
 
+## Automated Testing
+---
+
+The EZGripper package includes a comprehensive testing script for validating launch files without requiring a graphical interface. This makes it easy to verify functionality in headless environments or automated testing pipelines.
+
+### Running the Tests
+
+```bash
+# From your ROS2 workspace
+source /opt/ros/humble/setup.bash
+source install/setup.bash
+/home/sake/linorobot2_ws/src/EZGripper_ros2/ezgripper_description/ezgripper_description/test_ezgripper_launch_files.py
+```
+
+The script will:
+- Run all EZGripper launch files in headless mode
+- Collect diagnostic information about nodes, topics, and parameters
+- Verify proper cleanup after termination
+- Generate detailed test reports in `~/ezgripper_test_results`
+
+For more details, see the [Testing Documentation](ezgripper_description/TESTING.md).
+
 ## TroubleShooting
 ---
 
