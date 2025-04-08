@@ -4,6 +4,16 @@ A ROS2 package that serves as a driver to the [EZGripper module](https://sakerob
 
 ## Tutorial
 
+### Multiple Gripper Configurations
+
+The EZGripper supports different configurations:
+
+* **Single Gripper**: The default configuration with one gripper unit
+* **Dual Gripper**: Two gripper units mounted together
+* **Triple Gripper**: Three gripper units mounted in a triangular configuration
+
+> **Important Update**: The triple gripper now uses fixed unit numbers (1, 2, 3) for the left, center, and right grippers. See the [Triple Gripper Guide](ezgripper_description/TRIPLE_GRIPPER_GUIDE.md) for detailed information.
+
 ### Installation
 ---
 

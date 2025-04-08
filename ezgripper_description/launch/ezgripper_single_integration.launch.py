@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-EZGripper Triple Integration - Launch File for Integration with Other Components
-This launch file is designed to integrate the EZGripper Triple with other robot components
+EZGripper Single Integration - Launch File for Integration with Other Components
+This launch file is designed to integrate the EZGripper Single with other robot components
 following the Linorobot2 architecture guidelines.
 """
 from launch import LaunchDescription
@@ -56,42 +56,10 @@ def generate_launch_description():
         description='Whether to launch robot state publisher (should be false when integrated)'
     )
     
-    # Joint state aggregator is no longer needed as we're using the robot_state_publisher directly
-    
-    prefix_arg = DeclareLaunchArgument(
-        'prefix',
-        default_value='gripper',
-        description='Prefix for robot joint names'
-    )
-    
-    unit_num_arg = DeclareLaunchArgument(
-        'unit_num',
-        default_value='1',
-        description='Legacy parameter - kept for backward compatibility'
-    )
-    
-    unit_num_left_arg = DeclareLaunchArgument(
-        'unit_num_left',
-        default_value='1',
-        description='Unit number for the left gripper position'
-    )
-    
-    unit_num_center_arg = DeclareLaunchArgument(
-        'unit_num_center',
-        default_value='2',
-        description='Unit number for the center gripper position'
-    )
-    
-    unit_num_right_arg = DeclareLaunchArgument(
-        'unit_num_right',
-        default_value='3',
-        description='Unit number for the right gripper position'
-    )
-    
-    # Include the triple gripper component launch file
+    # Include the single gripper component launch file
     component_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            os.path.join(pkg_dir, 'launch', 'ezgripper_triple_description.launch.py')
+            os.path.join(pkg_dir, 'launch', 'ezgripper_single_description.launch.py')
         ),
         launch_arguments={
             'use_sim_time': LaunchConfiguration('use_sim_time'),
@@ -99,17 +67,51 @@ def generate_launch_description():
             'namespace': LaunchConfiguration('namespace'),
             'launch_joint_publisher': LaunchConfiguration('launch_joint_publisher'),
             'launch_static_tf_publisher': LaunchConfiguration('launch_static_tf_publisher'),
-            'launch_robot_state_publisher': LaunchConfiguration('launch_robot_state_publisher'),
-            'prefix': LaunchConfiguration('prefix'),  # This must be passed correctly as empty string when needed
-            'unit_num': LaunchConfiguration('unit_num'),  # Legacy parameter
-            'unit_num_left': LaunchConfiguration('unit_num_left'),
-            'unit_num_center': LaunchConfiguration('unit_num_center'),
-            'unit_num_right': LaunchConfiguration('unit_num_right')
+            'launch_robot_state_publisher': LaunchConfiguration('launch_robot_state_publisher')
         }.items()
     )
     
-    # Joint state merger has been removed as it's no longer needed
-    # The robot_state_publisher handles joint state publishing directly
+    # Joint state merger node for integration - updated for new joint state hierarchy
+    # Now directly publishes component joint states to /joint_states
+    joint_state_merger = Node(
+        package='ezgripper_description',
+        executable='ezgripper_joint_merger.py',
+        name='ezgripper_joint_merger',
+        namespace=LaunchConfiguration('namespace'),
+        parameters=[
+            {'use_sim_time': LaunchConfiguration('use_sim_time')}
+        ],
+        # No remappings needed as the node now directly publishes to /joint_states
+        output='screen',
+        condition=IfCondition(LaunchConfiguration('launch_joint_publisher'))
+    )
+    
+    # Event handler for joint state merger with improved cleanup
+    joint_state_merger_exit_handler = RegisterEventHandler(
+        OnProcessExit(
+            target_action=joint_state_merger,
+            on_exit=[
+                LogInfo(msg=['Single gripper joint state merger exited']),
+                EmitEvent(event=Shutdown(reason='Single gripper joint state merger exited'))
+            ]
+        )
+    )
+    
+    # Global shutdown handler to ensure all processes are terminated
+    shutdown_handler = RegisterEventHandler(
+        OnShutdown(
+            on_shutdown=[
+                LogInfo(msg=['Shutting down EZGripper Single integration']),
+                # Execute a cleanup command to kill any lingering processes
+                Node(
+                    package='ezgripper_description',
+                    executable='cleanup_ezgripper_processes.py',
+                    name='cleanup_ezgripper_processes',
+                    output='screen'
+                )
+            ]
+        )
+    )
     
     return LaunchDescription([
         # Launch arguments
@@ -119,14 +121,10 @@ def generate_launch_description():
         launch_joint_publisher_arg,
         launch_static_tf_publisher_arg,
         launch_robot_state_publisher_arg,
-        prefix_arg,
-        unit_num_left_arg,
-        unit_num_center_arg,
-        unit_num_right_arg,
-        unit_num_arg,
         
-        # Include the triple gripper component
-        component_launch
+        # Include the single gripper component
+        component_launch,
+        shutdown_handler
     ])
 
 if __name__ == '__main__':
