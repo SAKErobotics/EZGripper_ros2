@@ -2,7 +2,7 @@
 
 ## Purpose and Scope
 
-This document serves as a comprehensive reference for integrating the [EZGripper module](https://sakerobotics.com/) from SAKE Robotics into ROS2 systems. It is designed to be a structured resource that provides all the necessary information for both human developers and Large Language Models (LLMs) to successfully integrate and use the EZGripper.
+This document serves as a comprehensive reference for integrating the [EZGripper module](https://sakerobotics.com/) from SAKE Robotics into any ROS2-based robot system. It is designed to be a structured resource that provides all the necessary information for both human developers and Large Language Models (LLMs) to successfully integrate and use the EZGripper with any robot arm or manipulator.
 
 The guide covers:
 
@@ -158,7 +158,7 @@ ros2 launch ezgripper_driver joy.launch.py
 
 ## Integration Examples
 
-### 1. Adding a Triple Gripper to a Robot Arm
+### 1. Adding a Triple Gripper to Any Robot Arm
 
 ```python
 # In your robot's launch file
@@ -181,7 +181,7 @@ def generate_launch_description():
         launch_arguments={
             'use_sim_time': LaunchConfiguration('use_sim_time'),
             'namespace': LaunchConfiguration('namespace'),
-            'prefix': 'left_arm',  # Adjust as needed
+            'prefix': 'robot_arm',  # Adjust based on your robot's naming convention
             'launch_joint_publisher': 'true',
             'launch_static_tf_publisher': 'true',
             'launch_robot_state_publisher': 'true'
@@ -197,7 +197,7 @@ def generate_launch_description():
     ])
 ```
 
-### 2. Controlling the Gripper
+### 2. Controlling the Gripper with Any Robot
 
 ```python
 import rclpy

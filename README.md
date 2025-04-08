@@ -1,18 +1,22 @@
 # EZGripper
 
-A ROS2 package that serves as a driver to the [EZGripper module](https://sakerobotics.com/) designed by SAKE Robotics. If you are not using ROS, use https://github.com/SAKErobotics/SAKErobotics
+A ROS2 package that serves as a driver to the [EZGripper module](https://sakerobotics.com/) designed by SAKE Robotics. This package provides a complete solution for integrating the EZGripper with any ROS2-based robot system. If you are not using ROS, use https://github.com/SAKErobotics/SAKErobotics
 
 ## Tutorial
 
 ### Multiple Gripper Configurations
 
-The EZGripper supports different configurations:
+The EZGripper supports different configurations that can be mounted on any robot arm:
 
 * **Single Gripper**: The default configuration with one gripper unit
 * **Dual Gripper**: Two gripper units mounted together
 * **Triple Gripper**: Three gripper units mounted in a triangular configuration
 
 > **Important Update**: The triple gripper now uses fixed unit numbers (1, 2, 3) for the left, center, and right grippers. See the [Triple Gripper Guide](ezgripper_description/TRIPLE_GRIPPER_GUIDE.md) for detailed information.
+
+### Integration Guide
+
+For detailed information on integrating the EZGripper with any robot arm, see the [Integration Guide](README_INTEGRATION.md).
 
 ### Installation
 ---
