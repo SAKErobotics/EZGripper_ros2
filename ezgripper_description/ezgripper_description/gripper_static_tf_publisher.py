@@ -10,8 +10,16 @@ from geometry_msgs.msg import TransformStamped
 from tf2_ros import StaticTransformBroadcaster
 import yaml
 import os
+import sys
 import math
 from ament_index_python.packages import get_package_share_directory
+
+# Try to import prctl for process naming
+try:
+    import prctl
+    HAS_PRCTL = True
+except ImportError:
+    HAS_PRCTL = False
 
 class GripperStaticTFPublisher(Node):
     def __init__(self):
@@ -28,12 +36,29 @@ class GripperStaticTFPublisher(Node):
         
     def create_static_transforms(self):
         """Create static transforms for the EZGripper components"""
-        # Create transforms for the single gripper
-        self.create_finger_transforms('left')
+        # Get the prefix (arm name) from the parameters
+        self.declare_parameter('prefix', '')
         
-        # Create transforms for the triple gripper
-        for i in range(1, 4):
-            self.create_finger_transforms(f'ezgripper_gripper{i}')
+        # Get the prefix parameter
+        prefix = self.get_parameter('prefix').value
+        
+        # Log the prefix being used
+        self.get_logger().info(f'Using prefix "{prefix}" for frame IDs')
+        
+        # Create transforms for the triple gripper only
+        # Each gripper in the triple setup has its own unit number
+        # Use the correct naming pattern with underscore between prefix (arm name) and unit_num
+        for unit_num in range(1, 4):
+            # If prefix is provided, use prefix_unit_num format
+            # Otherwise just use unit_num
+            if prefix:
+                # Use the provided prefix with the unit number
+                self.get_logger().info(f'Creating transforms for {prefix}_ezgripper_{unit_num}_ezgripper')
+                self.create_finger_transforms(f'{prefix}_ezgripper_{unit_num}_ezgripper')
+            else:
+                # When no prefix is provided, use just ezgripper with the unit number
+                self.get_logger().info(f'Creating transforms for ezgripper_{unit_num}_ezgripper')
+                self.create_finger_transforms(f'ezgripper_{unit_num}_ezgripper')
     
     def create_finger_transforms(self, prefix):
         """Create transforms for a gripper's fingers
@@ -43,37 +68,95 @@ class GripperStaticTFPublisher(Node):
         # The palm to L1 joints are actuated and handled by the joint_state_publisher
         # We only publish the fixed L1 to L2 and L2 to pad transforms
         
-        # Create transform from finger L1_1 to finger L2_1 (fixed joint)
-        self.publish_static_transform(
-            parent_frame=f'{prefix}_ezgripper_finger_L1_1',
-            child_frame=f'{prefix}_ezgripper_finger_L2_1',
-            x=0.052, y=0.0, z=0.0,
-            roll=0.0, pitch=0.0, yaw=0.0
-        )
-        
-        # Create transform from finger L2_1 to finger pad 1 (fixed joint)
-        self.publish_static_transform(
-            parent_frame=f'{prefix}_ezgripper_finger_L2_1',
-            child_frame=f'{prefix}_ezgripper_finger_pad_1',
-            x=0.01849, y=0.0, z=0.0,
-            roll=0.0, pitch=-0.23, yaw=0.0
-        )
-        
-        # Create transform from finger L1_2 to finger L2_2 (fixed joint)
-        self.publish_static_transform(
-            parent_frame=f'{prefix}_ezgripper_finger_L1_2',
-            child_frame=f'{prefix}_ezgripper_finger_L2_2',
-            x=0.052, y=0.0, z=0.0,
-            roll=0.0, pitch=0.0, yaw=0.0
-        )
-        
-        # Create transform from finger L2_2 to finger pad 2 (fixed joint)
-        self.publish_static_transform(
-            parent_frame=f'{prefix}_ezgripper_finger_L2_2',
-            child_frame=f'{prefix}_ezgripper_finger_pad_2',
-            x=0.01849, y=0.0, z=0.0,
-            roll=0.0, pitch=-0.23, yaw=0.0
-        )
+        # Extract the prefix and unit_num from the input prefix (format: prefix_ezgripper_unit_num_ezgripper)
+        parts = prefix.split('_')
+        if len(parts) >= 4:
+            # Format should be prefix_ezgripper_unit_num_ezgripper
+            actual_prefix = parts[0]
+            unit_num = parts[2]
+            
+            # Create transform from finger L1_1 to finger L2_1 (fixed joint)
+            self.publish_static_transform(
+                parent_frame=f'{actual_prefix}_ezgripper_{unit_num}_ezgripper_knuckle_palm_L1_1',
+                child_frame=f'{actual_prefix}_ezgripper_{unit_num}_ezgripper_finger_L1_1',
+                x=0.052, y=0.0, z=0.0,
+                roll=0.0, pitch=0.0, yaw=0.0
+            )
+            
+            # Create transform from finger L1_1 to finger L2_1 (fixed joint)
+            self.publish_static_transform(
+                parent_frame=f'{actual_prefix}_ezgripper_{unit_num}_ezgripper_finger_L1_1',
+                child_frame=f'{actual_prefix}_ezgripper_{unit_num}_ezgripper_finger_L2_1',
+                x=0.052, y=0.0, z=0.0,
+                roll=0.0, pitch=0.0, yaw=0.0
+            )
+            
+            # Create transform from finger L2_1 to finger pad 1 (fixed joint)
+            self.publish_static_transform(
+                parent_frame=f'{actual_prefix}_ezgripper_{unit_num}_ezgripper_finger_L2_1',
+                child_frame=f'{actual_prefix}_ezgripper_{unit_num}_ezgripper_finger_pad_1',
+                x=0.01849, y=0.0, z=0.0,
+                roll=0.0, pitch=-0.23, yaw=0.0
+            )
+            
+            # Create transform from finger L1_2 to finger L2_2 (fixed joint)
+            self.publish_static_transform(
+                parent_frame=f'{actual_prefix}_ezgripper_{unit_num}_ezgripper_knuckle_palm_L1_2',
+                child_frame=f'{actual_prefix}_ezgripper_{unit_num}_ezgripper_finger_L1_2',
+                x=0.052, y=0.0, z=0.0,
+                roll=0.0, pitch=0.0, yaw=0.0
+            )
+            
+            # Create transform from finger L1_2 to finger L2_2 (fixed joint)
+            self.publish_static_transform(
+                parent_frame=f'{actual_prefix}_ezgripper_{unit_num}_ezgripper_finger_L1_2',
+                child_frame=f'{actual_prefix}_ezgripper_{unit_num}_ezgripper_finger_L2_2',
+                x=0.052, y=0.0, z=0.0,
+                roll=0.0, pitch=0.0, yaw=0.0
+            )
+            
+            # Create transform from finger L2_2 to finger pad 2 (fixed joint)
+            self.publish_static_transform(
+                parent_frame=f'{actual_prefix}_ezgripper_{unit_num}_ezgripper_finger_L2_2',
+                child_frame=f'{actual_prefix}_ezgripper_{unit_num}_ezgripper_finger_pad_2',
+                x=0.01849, y=0.0, z=0.0,
+                roll=0.0, pitch=-0.23, yaw=0.0
+            )
+        else:
+            # Fallback to the original format if the prefix doesn't match the expected format
+            self.get_logger().warn(f'Unexpected prefix format: {prefix}. Expected format: prefix_unit_num_ezgripper')
+            
+            # Create transform from finger L1_1 to finger L2_1 (fixed joint)
+            self.publish_static_transform(
+                parent_frame=f'{prefix}_ezgripper_finger_L1_1',
+                child_frame=f'{prefix}_ezgripper_finger_L2_1',
+                x=0.052, y=0.0, z=0.0,
+                roll=0.0, pitch=0.0, yaw=0.0
+            )
+            
+            # Create transform from finger L2_1 to finger pad 1 (fixed joint)
+            self.publish_static_transform(
+                parent_frame=f'{prefix}_ezgripper_finger_L2_1',
+                child_frame=f'{prefix}_ezgripper_finger_pad_1',
+                x=0.01849, y=0.0, z=0.0,
+                roll=0.0, pitch=-0.23, yaw=0.0
+            )
+            
+            # Create transform from finger L1_2 to finger L2_2 (fixed joint)
+            self.publish_static_transform(
+                parent_frame=f'{prefix}_ezgripper_finger_L1_2',
+                child_frame=f'{prefix}_ezgripper_finger_L2_2',
+                x=0.052, y=0.0, z=0.0,
+                roll=0.0, pitch=0.0, yaw=0.0
+            )
+            
+            # Create transform from finger L2_2 to finger pad 2 (fixed joint)
+            self.publish_static_transform(
+                parent_frame=f'{prefix}_ezgripper_finger_L2_2',
+                child_frame=f'{prefix}_ezgripper_finger_pad_2',
+                x=0.01849, y=0.0, z=0.0,
+                roll=0.0, pitch=-0.23, yaw=0.0
+            )
         
         self.get_logger().info(f'Created static transforms for {prefix} fingers')
         
@@ -116,6 +199,23 @@ class GripperStaticTFPublisher(Node):
         self.get_logger().info(f'Created static transform from {parent_frame} to {child_frame}')
 
 def main(args=None):
+    # Set process name for better identification in system tools
+    if HAS_PRCTL:
+        prctl.set_name("gripper_static_tf")
+        prctl.set_proctitle("gripper_static_tf_publisher")
+    else:
+        # Alternative method using setproctitle if available
+        try:
+            from setproctitle import setproctitle
+            setproctitle("gripper_static_tf_publisher")
+        except ImportError:
+            # If neither method is available, we can still set the process title for ps
+            try:
+                # This only works on Linux
+                os.environ['_'] = "gripper_static_tf_publisher"
+            except Exception:
+                pass
+    
     rclpy.init(args=args)
     node = GripperStaticTFPublisher()
     try:
