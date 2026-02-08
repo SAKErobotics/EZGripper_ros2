@@ -1,0 +1,12 @@
+/**:
+  ros__parameters:
+
+    port: 192.168.0.200:5000
+    baudrate: 57600
+
+    no_of_grippers: 1
+
+    gripper_1:
+      action_name: gripper_cmd
+      servo_ids: [1]
+      robot_ns: main

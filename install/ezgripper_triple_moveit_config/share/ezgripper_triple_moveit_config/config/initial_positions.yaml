@@ -1,0 +1,6 @@
+# Default initial positions for ezgripper_triple_mount_instantiation's ros2_control fake system
+
+initial_positions:
+  left_gripper1_ezgripper_knuckle_palm_L1_1: 0
+  left_gripper2_ezgripper_knuckle_palm_L1_1: 0
+  left_gripper3_ezgripper_knuckle_palm_L1_1: 0
