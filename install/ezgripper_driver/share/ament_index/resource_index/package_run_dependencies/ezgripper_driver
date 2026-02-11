@@ -1,1 +1,0 @@
-python3-serial;rviz2;xacro;robot_state_publisher;joint_state_publisher;joint_state_publisher_gui;controller_manager;ros2_control;ros2_controllers;joint_state_broadcaster;joint_trajectory_controller;gripper_controllers;joy;control_msgs;moveit;ros_gz_sim;gz_ros2_control;ros_gz_bridge;ament_lint_auto;ament_lint_common
