@@ -1,3 +1,21 @@
+## UPDATE
+
+Docs need to be updated but the key commands are:
+
+Only launch one of these options
+##Single
+ros2 launch ezgripper_gazebo gazebo_single.launch.py
+##Double
+ros2 launch ezgripper_gazebo gazebo_double.launch.py
+##Triple
+ros2 launch ezgripper_gazebo gazebo_triple.launch.py  # Launches Gazebo
+
+At the time of this, I only setup moveit for the triple
+## MOVEIT
+ros2 launch ezgripper_triple_moveit_config moveit_gazebo.launch.py 
+
+-------- 
+
 # EZGripper
 
 A ROS2 package that serves as a driver to the [EZGripper module](https://sakerobotics.com/) designed by SAKE Robotics. This package provides a complete solution for integrating the EZGripper with any ROS2-based robot system. If you are not using ROS, use https://github.com/SAKErobotics/SAKErobotics
