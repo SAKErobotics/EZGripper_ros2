@@ -76,8 +76,6 @@ class GripperAction(Node):
         self.declare_parameter('baudrate')
         self.declare_parameter('no_of_grippers')
 
-        self.port = self.get_parameter('port').value
-        self.baudrate = self.get_parameter('baudrate').value
         self.no_of_grippers = self.get_parameter('no_of_grippers').value
 
         self._feedback = {}
@@ -86,7 +84,9 @@ class GripperAction(Node):
         self.joint_state_pub = {}
         self.effort_dict = {}
 
-        connection = create_connection(dev_name=self.port, baudrate=self.baudrate)
+        port = self.get_parameter('port').value
+        baudrate = self.get_parameter('baudrate').value
+        connection = create_connection(dev_name=port, baudrate=baudrate)
 
         for i in range(1, int(self.no_of_grippers) + 1):
 
@@ -101,7 +101,8 @@ class GripperAction(Node):
             self._feedback[action_name] = GripperCommand.Feedback()
             self._result[action_name] = GripperCommand.Result()
 
-            self.grippers[action_name] = Gripper(connection, action_name, servo_ids)
+            self.config = {'gripper_{}'.format(i): {'action_name': action_name, 'servo_ids': servo_ids, 'robot_ns': robot_ns}}
+            self.grippers[action_name] = Gripper(connection, action_name, servo_ids, self.config)
             self.all_servos += self.grippers[action_name].servos
 
             self.grippers[action_name].calibrate()
